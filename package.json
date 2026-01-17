@@ -1,0 +1,27 @@
+{
+  "name": "spectra-fullstack",
+  "version": "2.0.0",
+  "description": "SpectraV2 Web3 Fullstack Application",
+  "main": "backend/server.js",
+  "scripts": {
+    "setup": "npm install && cd backend && npm install && cd ../frontend && npm install --legacy-peer-deps",
+    "build": "cd frontend && npm run build",
+    "start": "npm run build && cd backend && node server.js",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\""
+  },
+  "keywords": [
+    "web3",
+    "react",
+    "node",
+    "fullstack"
+  ],
+  "author": "Trae",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "type": "commonjs"
+}
