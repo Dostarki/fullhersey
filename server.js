@@ -18,11 +18,10 @@ app.use(bodyParser.json());
 app.use(express.json());
 
 // MongoDB Connection (Cached for Serverless)
-let isConnected = false;
-let mongod = null;
-
 const connectToDatabase = async () => {
-  if (isConnected) return;
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
   
   let MONGO_URL = process.env.MONGO_URL;
   const DB_NAME = process.env.DB_NAME || 'spectre_db';
@@ -33,34 +32,52 @@ const connectToDatabase = async () => {
         try {
             console.log('? Attempting to connect to local MongoDB...');
             await mongoose.connect(MONGO_URL, { dbName: DB_NAME, serverSelectionTimeoutMS: 2000 });
-            isConnected = true;
             console.log('? Connected to Local MongoDB');
             return;
         } catch (localErr) {
             console.warn('? Local MongoDB not found, switching to In-Memory MongoDB...');
             const { MongoMemoryServer } = require('mongodb-memory-server');
-            mongod = await MongoMemoryServer.create();
+            const mongod = await MongoMemoryServer.create();
             MONGO_URL = mongod.getUri();
             console.log('? In-Memory MongoDB URI:', MONGO_URL);
         }
     }
 
-    await mongoose.connect(MONGO_URL, { dbName: DB_NAME });
-    isConnected = true;
+    if (!MONGO_URL) {
+        throw new Error("MONGO_URL is not defined in environment variables.");
+    }
+
+    await mongoose.connect(MONGO_URL, { 
+        dbName: DB_NAME,
+        bufferCommands: false, // Disable buffering to fail fast if not connected
+        serverSelectionTimeoutMS: 5000 // 5s timeout
+    });
     console.log('? Connected to MongoDB');
   } catch (err) {
     console.error('? MongoDB Connection Error:', err);
+    throw err; // Rethrow to handle in middleware
   }
 };
 
 // Connect to DB immediately if running locally
 if (require.main === module) {
-  connectToDatabase();
+  connectToDatabase().catch(err => console.error("Initial DB Connection Failed:", err));
 } else {
   // For serverless, connect inside the request handler or middleware
   app.use(async (req, res, next) => {
-    await connectToDatabase();
-    next();
+    // Skip DB connection for static files or simple health checks if needed, 
+    // but better to keep it simple.
+    if (req.path === '/' || req.path === '/api') {
+        return next();
+    }
+    
+    try {
+        await connectToDatabase();
+        next();
+    } catch (error) {
+        console.error("Critical: Database connection failed handling request to " + req.path);
+        res.status(500).json({ error: "Database connection unavailable", details: error.message });
+    }
   });
 }
 
