@@ -121,7 +121,7 @@ app.use('/api', apiRouter);
 // Serve Static Frontend (Only in Local/Production Server Mode)
 // In Vercel, Frontend is served separately
 if (require.main === module) {
-  const frontendPath = path.join(__dirname, '../frontend/build');
+  const frontendPath = path.join(__dirname, 'frontend/build');
   app.use(express.static(frontendPath));
   
   app.get('*', (req, res) => {

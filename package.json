@@ -4,11 +4,10 @@
   "description": "SpectraV2 Web3 Fullstack Application",
   "private": true,
   "scripts": {
-    "setup": "cd backend && npm install && cd ../frontend && npm install --legacy-peer-deps",
-    "prebuild": "npm run setup",
-    "build": "cd frontend && npm run build",
-    "start": "cd backend && node server.js",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\""
+    "postinstall": "cd frontend && npm install --legacy-peer-deps && npm run build",
+    "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
+    "start": "node server.js",
+    "dev": "concurrently \"nodemon server.js\" \"cd frontend && npm start\""
   },
   "keywords": [
     "web3",
@@ -18,8 +17,23 @@
   ],
   "author": "Trae",
   "license": "ISC",
+  "dependencies": {
+    "@radr/shadowwire": "^1.1.2",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.13.2",
+    "body-parser": "^1.20.3",
+    "bs58": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.9.5",
+    "tweetnacl": "^1.0.3"
+  },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "mongodb-memory-server": "^11.0.1",
+    "nodemon": "^3.1.9"
   },
   "type": "commonjs"
 }
