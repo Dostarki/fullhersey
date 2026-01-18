@@ -44,7 +44,7 @@ const FeaturesSection = () => {
               Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-purple-500">Resilience</span>
             </h2>
             <p className="text-xl text-gray-400 font-light leading-relaxed">
-              Spectra combines speed, security, and anonymity into a single powerful protocol.
+              Spectre combines speed, security, and anonymity into a single powerful protocol.
             </p>
         </div>
 
@@ -87,7 +87,7 @@ const FeaturesSection = () => {
                 </div>
                 <h3 className="text-4xl font-bold text-white tracking-tight">Cryptographic Resilience</h3>
                 <p className="text-gray-400 text-lg leading-relaxed">
-                    Solana is actively integrating quantum resilience. SPECTRA leverages Bonsol to
+                    Solana is actively integrating quantum resilience. SPECTRE leverages Bonsol to
                     enable off-chain verifiable computation. This allows heavy cryptography to be
                     verified efficiently on-chain, ensuring that the privacy guarantees of today hold
                     up against the compute power of tomorrow.
