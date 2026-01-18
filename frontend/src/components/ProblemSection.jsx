@@ -80,7 +80,7 @@ const ProblemSection = () => {
                     <div className="flex items-center gap-3 text-green-400/80 bg-green-500/10 p-3 rounded-xl border border-green-500/10 relative overflow-hidden">
                          <div className="absolute inset-0 bg-green-400/10 animate-pulse"></div>
                         <User className="w-5 h-5 shrink-0 relative z-10" />
-                        <span className="font-mono text-sm relative z-10">Spectra <span className="text-white font-bold">ZK-SHIELD</span> Active</span>
+                        <span className="font-mono text-sm relative z-10">Spectre <span className="text-white font-bold">ZK-SHIELD</span> Active</span>
                     </div>
                     <div className="flex items-center gap-3 text-green-400/80 bg-green-500/10 p-3 rounded-xl border border-green-500/10">
                         <Zap className="w-5 h-5 shrink-0" />
