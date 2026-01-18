@@ -1,5 +1,5 @@
 import React from 'react';
-import { Twitter, Send, Github, ArrowUpRight, X } from 'lucide-react'; // Added X
+import { ArrowUpRight } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -33,7 +33,11 @@ const Footer = () => {
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group"
                 >
-                    <X className="w-4 h-4 text-gray-400 group-hover:text-white" />
+                    <img 
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAAAAABXZoBIAAAA/0lEQVR4AbXPIazCMACE4d+L2qoZFEGSIGcRc/gJJB5XMzGJmK9EN0HMi+qaibkKVF1txdQe4g0YzPK5yyWXHL9TaPNQ89LojH87N1rbJcXkMF4Fk31UMrf34hm14KUeoQxGArALHTMuQD2cAWQfJXOpgTbksGr9ng8qluShJTPhyCdx63POg7rEim95ZyR68I1ggQpnCEGwyPicw6hZtPEGmnhkycqOio1zm6XuFtyw5XDXfGvuau0dXHzJp8pfBPuhIXO9ZK5ILUCdSvLYMpc6ASBtl3EaC97I4KaFaOCaBE9Zn5jUsVqR2vcTJZO1DdbGoZryVp94Ka/mQfE7f2T3df0WBhLDAAAAAElFTkSuQmCC" 
+                        alt="X" 
+                        className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity invert" 
+                    />
                 </a>
             </div>
           </div>
