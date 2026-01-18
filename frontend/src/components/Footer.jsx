@@ -1,5 +1,5 @@
 import React from 'react';
-import { Twitter, Send, Github, ArrowUpRight } from 'lucide-react';
+import { Twitter, Send, Github, ArrowUpRight, X } from 'lucide-react'; // Added X
 
 const Footer = () => {
   return (
@@ -23,43 +23,32 @@ const Footer = () => {
                 Shield your assets, break the link, and reclaim your financial anonymity.
             </p>
             <div className="flex gap-4 pt-2">
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group">
-                    <Twitter className="w-4 h-4 text-gray-400 group-hover:text-white" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group">
-                    <Send className="w-4 h-4 text-gray-400 group-hover:text-white" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group">
-                    <Github className="w-4 h-4 text-gray-400 group-hover:text-white" />
+                <a 
+                    href="https://x.com/spectretors" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group"
+                >
+                    <X className="w-4 h-4 text-gray-400 group-hover:text-white" />
                 </a>
             </div>
           </div>
 
           {/* Links Columns */}
-          <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-2 gap-8">
             <div>
                 <h4 className="text-white font-bold mb-6 text-sm tracking-widest">ECOSYSTEM</h4>
                 <ul className="space-y-4">
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors flex items-center gap-2 group">Spectra App <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"/></a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Explorer</a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Documentation</a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Github</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 className="text-white font-bold mb-6 text-sm tracking-widest">GOVERNANCE</h4>
-                <ul className="space-y-4">
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">DAO</a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Tokenomics</a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Proposals</a></li>
+                    <li><a href="/app" className="text-gray-500 hover:text-green-400 text-sm transition-colors flex items-center gap-2 group">Spectre App <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"/></a></li>
+                    <li><a href="/docs" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Documentation</a></li>
                 </ul>
             </div>
             <div>
                 <h4 className="text-white font-bold mb-6 text-sm tracking-widest">LEGAL</h4>
                 <ul className="space-y-4">
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Privacy Policy</a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Terms of Service</a></li>
-                    <li><a href="#" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Cookie Policy</a></li>
+                    <li><a href="/privacy" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Privacy Policy</a></li>
+                    <li><a href="/terms" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Terms of Service</a></li>
+                    <li><a href="/cookies" className="text-gray-500 hover:text-green-400 text-sm transition-colors">Cookie Policy</a></li>
                 </ul>
             </div>
           </div>
