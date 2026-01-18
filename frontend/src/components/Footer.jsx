@@ -68,7 +68,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/5 gap-4">
           <p className="text-gray-600 text-xs font-mono">
-            � 2025 SPECTRA LABS. ALL RIGHTS RESERVED.
+            � 2025 SPECTRE LABS. ALL RIGHTS RESERVED.
           </p>
           <div className="flex items-center gap-2">
              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
