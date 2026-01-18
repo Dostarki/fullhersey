@@ -484,7 +484,7 @@ const DashboardPage = () => {
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-1 bg-[#111]/50 p-1 rounded-full border border-white/5">
                          <button onClick={() => setShowHistory(!showHistory)} className="text-gray-400 hover:text-white transition-all text-xs font-medium hover:bg-white/5 px-4 py-1.5 rounded-full">History</button>
-                         <a href="#" className="text-gray-400 hover:text-white transition-all text-xs font-medium hover:bg-white/5 px-4 py-1.5 rounded-full">Docs</a>
+                         <a href="/app" className="text-gray-400 hover:text-white transition-all text-xs font-medium hover:bg-white/5 px-4 py-1.5 rounded-full">Docs</a>
                     </div>
                     
                     {walletAddress ? (

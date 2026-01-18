@@ -13,8 +13,12 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-4 col-span-1 md:col-span-1">
             <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center font-bold text-black text-xl shadow-[0_0_15px_rgba(74,222,128,0.3)]">
-                    S
+                <div className="w-8 h-8 relative">
+                    <img 
+                      src="https://i.hizliresim.com/852gn2e.png" 
+                      alt="Spectre Logo" 
+                      className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]"
+                    />
                 </div>
                 <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Spectre</span>
             </div>
