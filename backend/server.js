@@ -9,7 +9,8 @@ const bodyParser = require('body-parser');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Default to port 80 for production usage on VDS, or use env variable
+const PORT = process.env.PORT || 80;
 
 // Middleware
 app.use(cors());

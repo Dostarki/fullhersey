@@ -25,7 +25,9 @@ import TokenSelector from '../components/TokenSelector';
 
 // Helius RPC URL
 const HELIUS_RPC = 'https://mainnet.helius-rpc.com/?api-key=9b5e747a-f1c2-4c67-8294-537ad41e92b6';
-const API_URL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api';
+// Use relative path for API, works for both dev (with proxy) and prod (same origin)
+// If running dev separately without proxy, you might need http://localhost:80/api
+const API_URL = '/api'; 
 
 const DEFAULT_TOKENS = [
     { symbol: 'SOL', name: 'Solana', address: 'So11111111111111111111111111111111111111112', logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', decimals: 9 },
