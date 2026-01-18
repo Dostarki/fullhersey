@@ -80,12 +80,18 @@ router.post('/', async (req, res) => {
         console.log('Generating new deposit address for user...');
         const keyPair = nacl.sign.keyPair();
         
-        // Handle bs58 encode
-        const encode = bs58.encode || bs58.default?.encode;
-        if (!encode) throw new Error('bs58.encode is not a function');
+        // Robust bs58 encode handling
+        let encodeFunc = bs58.encode;
+        if (!encodeFunc && bs58.default && bs58.default.encode) {
+             encodeFunc = bs58.default.encode;
+        } else if (!encodeFunc && typeof bs58.default === 'function') {
+             encodeFunc = bs58.default;
+        }
+        
+        if (typeof encodeFunc !== 'function') throw new Error('bs58.encode is not a function');
 
-        user.depositAddress = encode(keyPair.publicKey);
-        user.depositSecret = encode(keyPair.secretKey);
+        user.depositAddress = encodeFunc(keyPair.publicKey);
+        user.depositSecret = encodeFunc(keyPair.secretKey);
         console.log('Deposit address generated:', user.depositAddress);
     }
 

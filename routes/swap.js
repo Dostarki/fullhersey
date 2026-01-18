@@ -53,15 +53,21 @@ router.get('/tokens', async (req, res) => {
 
 const { Connection, Keypair, VersionedTransaction, PublicKey } = require('@solana/web3.js');
 const bs58 = require('bs58');
-// Fix for bs58 import issue across different versions
-const decode = bs58.decode || (bs58.default ? bs58.default.decode : null) || ((str) => new Uint8Array(bs58.default(str))); 
 
-// If decode is still not found, try to use the raw library if it's a function directly
-// But usually bs58.decode works in older versions, and bs58.default.decode in newer.
-// Let's print what bs58 is to debug if this fails again.
-if (typeof decode !== 'function') {
-    console.error('[CRITICAL] bs58 library structure unexpected:', bs58);
+// Robust bs58 decode handling (shared logic)
+let decodeFunc = bs58.decode;
+if (!decodeFunc && bs58.default && bs58.default.decode) {
+     decodeFunc = bs58.default.decode;
+} else if (!decodeFunc && typeof bs58.default === 'function') {
+     decodeFunc = (str) => new Uint8Array(bs58.default(str));
 }
+
+if (typeof decodeFunc !== 'function') {
+    console.error('[CRITICAL] bs58 library structure unexpected in swap.js:', bs58);
+}
+// Alias for usage
+const decode = decodeFunc;
+
 
 // ... (imports remain same)
 
