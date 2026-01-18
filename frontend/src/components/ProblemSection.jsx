@@ -72,7 +72,7 @@ const ProblemSection = () => {
                         <span className="text-sm font-bold bg-green-500 text-black px-2 py-0.5 rounded uppercase tracking-wide">Pro</span>
                     </h3>
                     <p className="text-gray-400 leading-relaxed">
-                        The ultimate shield for your assets. <span className="text-green-400 font-bold">Spectra</span> utilizes military-grade Zero-Knowledge Proofs to completely sever the on-chain link between sender and receiver.
+                        The ultimate shield for your assets. <span className="text-green-400 font-bold">Spectre</span> utilizes military-grade Zero-Knowledge Proofs to completely sever the on-chain link between sender and receiver.
                     </p>
                 </div>
 
