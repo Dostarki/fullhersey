@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "copy-webpack-plugin": "^13.0.1",
     "mongodb-memory-server": "^11.0.1",
     "nodemon": "^3.1.9"
   },
