@@ -4,7 +4,6 @@
   "description": "SpectraV2 Web3 Fullstack Application",
   "private": true,
   "scripts": {
-    "postinstall": "cd frontend && npm install --legacy-peer-deps && npm run build",
     "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
     "start": "node server.js",
     "dev": "concurrently \"nodemon server.js\" \"cd frontend && npm start\""
