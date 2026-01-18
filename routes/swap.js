@@ -25,13 +25,23 @@ const getTokens = async () => {
         return tokenCache;
     }
     try {
-        const response = await axios.get(JUPITER_TOKENS_API);
-        tokenCache = response.data;
-        lastCacheTime = Date.now();
-        return tokenCache;
+        const response = await axios.get(JUPITER_TOKENS_API, { timeout: 5000 }); // Add timeout
+        if (response.data && Array.isArray(response.data)) {
+            tokenCache = response.data;
+            lastCacheTime = Date.now();
+            return tokenCache;
+        }
+        throw new Error("Invalid token data format");
     } catch (error) {
         console.error('Failed to fetch tokens:', error.message);
-        return tokenCache || []; // Return stale cache or empty
+        // Fallback to default tokens if cache is empty
+        if (!tokenCache) {
+             return [
+                { symbol: 'SOL', name: 'Solana', address: 'So11111111111111111111111111111111111111112', logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', decimals: 9 },
+                { symbol: 'USDC', name: 'USD Coin', address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png', decimals: 6 }
+             ];
+        }
+        return tokenCache;
     }
 };
 

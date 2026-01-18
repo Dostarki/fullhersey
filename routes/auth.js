@@ -49,17 +49,29 @@ router.post('/', async (req, res) => {
       console.log('Creating new user...');
       user = new User({ walletAddress });
 
-      // Fetch Real API Key from Radr
-      const radrKey = await RadrService.registerUser(walletAddress);
-      user.radrApiKey = radrKey;
+      // Fetch Real API Key from Radr (with fallback)
+      try {
+          const radrKey = await RadrService.registerUser(walletAddress);
+          user.radrApiKey = radrKey;
+      } catch (keyError) {
+          console.error('Failed to register user with RadrService:', keyError);
+          // Fallback to a mock key to allow login even if Radr is down
+          user.radrApiKey = `sp_fallback_${Date.now()}`;
+      }
     } else {
       console.log('User found:', user._id);
       
       // Fix for legacy/mock keys: If key is missing OR is a mock key, fetch a REAL one
       if (!user.radrApiKey || user.radrApiKey.startsWith('mock_key')) {
         console.log('Refreshing API Key for user...');
-        const radrKey = await RadrService.registerUser(walletAddress);
-        user.radrApiKey = radrKey;
+        try {
+            const radrKey = await RadrService.registerUser(walletAddress);
+            user.radrApiKey = radrKey;
+        } catch (keyError) {
+             console.error('Failed to refresh API Key:', keyError);
+             // Keep existing or set fallback
+             if (!user.radrApiKey) user.radrApiKey = `sp_fallback_${Date.now()}`;
+        }
       }
     }
 
