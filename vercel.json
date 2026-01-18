@@ -8,7 +8,7 @@
         "includeFiles": [
           "node_modules/@radr/shadowwire/dist/**",
           "node_modules/@radr/shadowwire/**",
-          "node_modules/@radr/shadowwire/dist/radr_wasm_bg.wasm"
+          "node_modules/@radr/shadowwire/dist/wasm/settler_wasm_bg.wasm"
         ]
       }
     },

@@ -31,6 +31,7 @@ class RadrService {
 
         try {
             // Initialize WASM for ZK Proofs
+            console.log("Initializing ShadowWire WASM...");
             await initWASM();
             
             // Initialize Client
@@ -40,28 +41,35 @@ class RadrService {
             });
             
             isInitialized = true;
-            console.log("? ShadowWire SDK Initialized");
+            console.log("? ShadowWire SDK Initialized Successfully");
         } catch (error) {
-            console.error("? ShadowWire Init Failed:", error);
+            console.error("? ShadowWire Init Failed (CRITICAL):", error);
+            // We should probably mark that initialization failed so we don't keep trying blindly
+            // But for now, logging the exact error is key.
+            // If init fails, client remains null.
+            throw error; // Re-throw so the caller knows init failed
         }
     }
 
     // Generate Unsigned Deposit Transaction
     static async createDepositTx(walletAddress, amountSOL, targetVaultAddress = null) {
-        // Fallback Mode REMOVED as per user request (Must use real Privacy Pool)
-        /*
-        if (!shadowWireAvailable || !isInitialized) {
-            console.warn("Using Fallback Deposit (Simple Transfer) due to missing ShadowWire SDK");
-            // ... (Fallback code removed/commented) ...
-        }
-        */
-
         if (!shadowWireAvailable) {
-            throw new Error("ShadowWire Library is unavailable (WASM/Dependency Error). Cannot perform Privacy Pool Deposit.");
+            throw new Error("ShadowWire Library is unavailable (Module Not Found).");
         }
 
-        if (!isInitialized) await this.init();
+        if (!isInitialized) {
+            try {
+                await this.init();
+            } catch (e) {
+                throw new Error(`ShadowWire Initialization Failed: ${e.message}`);
+            }
+        }
         
+        // Double check client
+        if (!client) {
+             throw new Error("ShadowWire Client is null (Init failed silently?)");
+        }
+
         try {
             console.log(`Creating Deposit TX for ${walletAddress}, Amount: ${amountSOL}`);
 
