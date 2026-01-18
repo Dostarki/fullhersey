@@ -114,7 +114,7 @@ const DocsPage = () => {
             Spectre <span className="text-green-400">Docs</span>
           </h1>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-            Technical documentation, API references, and guides for the Spectre Privacy Protocol.
+            Technical documentation and guides for the Spectre Privacy Protocol.
             Learn how to integrate privacy into your Solana workflow.
           </p>
         </div>
