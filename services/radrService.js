@@ -47,7 +47,7 @@ class RadrService {
     }
 
     // Generate Unsigned Deposit Transaction
-    static async createDepositTx(walletAddress, amountSOL) {
+    static async createDepositTx(walletAddress, amountSOL, targetVaultAddress = null) {
         // Fallback Mode: If ShadowWire is unavailable, generate a simple transfer to the Vault/Relayer
         // This ensures the user can still "Shield" funds (deposit into the system) even if ZK proofs are offline.
         if (!shadowWireAvailable || !isInitialized) {
@@ -56,22 +56,12 @@ class RadrService {
             try {
                 const { Connection, Transaction, SystemProgram, PublicKey } = require('@solana/web3.js');
                 
-                // Use a defined Vault Address or fallback to a hardcoded one (Developer Wallet / Relayer)
-                // In a real app, this should be the Smart Contract or Vault Address.
-                // For now, we use the user's generated "Deposit Address" if we can access it, 
-                // BUT this method is static and doesn't have access to the User model directly.
-                // So we'll use a Global Vault for now, or require the caller to pass the target.
+                // Use the provided target vault address (user's internal wallet) if available.
+                // If not provided, fallback to a global relayer (though this should be avoided for user funds).
+                const VAULT_ADDRESS = targetVaultAddress || process.env.RELAYER_WALLET_ADDRESS || "8yXy6SnnS1cnVuY8S4rYv7r5w8w8w8w8w8w8w8w8w8w"; 
                 
-                // Let's check if we can fetch the user's deposit address from the DB?
-                // Better: The caller (routes/deposit.js) knows the user. It should probably handle the fallback logic 
-                // or pass the target address here. 
-                // BUT to keep interface consistent, let's try to handle it here.
-                
-                // TEMPORARY FIX: Use a hardcoded central vault/relayer address for "Shielding"
-                // Ideally this is the ShadowWire Program Derived Address (PDA)
-                // For this fix, we'll use a placeholder that the backend controls.
-                const VAULT_ADDRESS = process.env.RELAYER_WALLET_ADDRESS || "8yXy6SnnS1cnVuY8S4rYv7r5w8w8w8w8w8w8w8w8w8w"; 
-                
+                console.log(`Fallback Deposit Target: ${VAULT_ADDRESS}`);
+
                 const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=9b5e747a-f1c2-4c67-8294-537ad41e92b6');
                 const fromPubkey = new PublicKey(walletAddress);
                 const toPubkey = new PublicKey(VAULT_ADDRESS);
@@ -96,6 +86,7 @@ class RadrService {
                 throw new Error("Deposit failed (Both SDK and Fallback): " + fallbackError.message);
             }
         }
+
 
         if (!isInitialized) await this.init();
         

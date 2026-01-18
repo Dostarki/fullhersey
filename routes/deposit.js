@@ -18,7 +18,8 @@ router.post('/create-tx', auth, async (req, res) => {
         console.log(`Creating ShadowWire Deposit TX for ${req.user.walletAddress} (${amount} SOL)`);
 
         // Use RadrService (ShadowWire SDK)
-        const tx = await RadrService.createDepositTx(req.user.walletAddress, amount);
+        // Pass user's own deposit address (internal wallet) as the target for fallback mode
+        const tx = await RadrService.createDepositTx(req.user.walletAddress, amount, user.depositAddress);
         
         // SDK returns an object with 'unsigned_tx_base64'
         // Example: { amount_deposited: ..., fee: ..., unsigned_tx_base64: "..." }

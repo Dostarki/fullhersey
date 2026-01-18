@@ -45,7 +45,7 @@ const Navbar = () => {
           
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-1">
-            {['Problem', 'Solution', 'Infrastructure', 'Docs'].map((item) => (
+            {['Problem', 'Infrastructure', 'Docs'].map((item) => (
                 <a 
                   key={item} 
                   href={item === 'Docs' ? '/docs' : `#${item.toLowerCase()}`} 
@@ -82,7 +82,7 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 p-6 md:hidden animate-in slide-in-from-top-5 duration-300">
             <div className="flex flex-col gap-4">
-                {['Problem', 'Solution', 'Infrastructure', 'Docs'].map((item) => (
+                {['Problem', 'Infrastructure', 'Docs'].map((item) => (
                     <a 
                       key={item} 
                       href={item === 'Docs' ? '/docs' : `#${item.toLowerCase()}`} 
