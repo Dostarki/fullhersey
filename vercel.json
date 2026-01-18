@@ -5,7 +5,10 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["node_modules/@radr/shadowwire/**/*.wasm"]
+        "includeFiles": [
+          "node_modules/@radr/shadowwire/dist/**/*.wasm",
+          "node_modules/@radr/shadowwire/**/*.wasm"
+        ]
       }
     },
     {
