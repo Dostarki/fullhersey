@@ -1,6 +1,19 @@
 
-const { ShadowWireClient, initWASM, TokenUtils } = require('@radr/shadowwire');
 const crypto = require('crypto');
+
+// Safely try to import ShadowWire, fallback if missing (e.g. Vercel environment issues)
+let ShadowWireClient, initWASM, TokenUtils;
+let shadowWireAvailable = false;
+
+try {
+    const shadowWire = require('@radr/shadowwire');
+    ShadowWireClient = shadowWire.ShadowWireClient;
+    initWASM = shadowWire.initWASM;
+    TokenUtils = shadowWire.TokenUtils;
+    shadowWireAvailable = true;
+} catch (error) {
+    console.warn("WARNING: @radr/shadowwire library not found or failed to load. Running in offline/fallback mode.", error.message);
+}
 
 let client = null;
 let isInitialized = false;
@@ -9,6 +22,13 @@ class RadrService {
     
     static async init() {
         if (isInitialized) return;
+        
+        if (!shadowWireAvailable) {
+            console.warn("ShadowWire unavailable, skipping initialization.");
+            isInitialized = true;
+            return;
+        }
+
         try {
             // Initialize WASM for ZK Proofs
             await initWASM();
@@ -28,7 +48,9 @@ class RadrService {
 
     // Generate Unsigned Deposit Transaction
     static async createDepositTx(walletAddress, amountSOL) {
+        if (!shadowWireAvailable) throw new Error("ShadowWire library is unavailable (WASM/Dependency error)");
         if (!isInitialized) await this.init();
+
         
         try {
             console.log(`Creating Deposit TX for ${walletAddress}, Amount: ${amountSOL}`);
