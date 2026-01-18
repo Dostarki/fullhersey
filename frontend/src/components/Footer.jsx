@@ -11,20 +11,16 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid md:grid-cols-4 gap-12 mb-20">
           {/* Brand Column */}
-          <div className="space-y-6 col-span-1 md:col-span-1">
-            <div className="flex items-center gap-3 group cursor-pointer">
-              <div className="relative w-10 h-10">
-                  <div className="absolute inset-0 bg-green-500 rounded-xl blur opacity-20 group-hover:opacity-50 transition-opacity duration-500"></div>
-                  <img 
-                    src="https://i.hizliresim.com/852gn2e.png" 
-                    alt="Spectra" 
-                    className="w-full h-full object-contain relative z-10"
-                  />
-              </div>
-              <span className="text-white text-xl font-bold tracking-tight">SPECTRA</span>
+          <div className="space-y-4 col-span-1 md:col-span-1">
+            <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-purple-600 rounded-lg flex items-center justify-center font-bold text-black text-xl shadow-[0_0_15px_rgba(74,222,128,0.3)]">
+                    S
+                </div>
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Spectre</span>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
-              Privacy at machine speed. The execution layer for the autonomous agent economy.
+            <p className="text-gray-500 text-sm leading-relaxed">
+                Next-generation privacy protocol on Solana. 
+                Shield your assets, break the link, and reclaim your financial anonymity.
             </p>
             <div className="flex gap-4 pt-2">
                 <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group">
@@ -72,7 +68,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/5 gap-4">
           <p className="text-gray-600 text-xs font-mono">
-            © 2025 SPECTRA LABS. ALL RIGHTS RESERVED.
+            ï¿½ 2025 SPECTRA LABS. ALL RIGHTS RESERVED.
           </p>
           <div className="flex items-center gap-2">
              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

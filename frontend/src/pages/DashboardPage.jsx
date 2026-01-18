@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js';
+import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
 import axios from 'axios';
 import bs58 from 'bs58';
 import { Buffer } from 'buffer';
@@ -16,14 +16,21 @@ import {
     ExternalLink, 
     Check, 
     X,
-    History
+    History,
+    SlidersHorizontal
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import TokenSelector from '../components/TokenSelector';
 
 // Helius RPC URL
 const HELIUS_RPC = 'https://mainnet.helius-rpc.com/?api-key=9b5e747a-f1c2-4c67-8294-537ad41e92b6';
 const API_URL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api';
+
+const DEFAULT_TOKENS = [
+    { symbol: 'SOL', name: 'Solana', address: 'So11111111111111111111111111111111111111112', logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png', decimals: 9 },
+    { symbol: 'USDC', name: 'USD Coin', address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png', decimals: 6 }
+];
 
 const DashboardPage = () => {
     // --- State ---
@@ -36,8 +43,25 @@ const DashboardPage = () => {
     // Inputs
     const [amount, setAmount] = useState('');
     const [recipient, setRecipient] = useState('');
-    const [fromToken, setFromToken] = useState('SOL');
-    const [toToken, setToToken] = useState('USDC');
+    
+    // Swap State
+    const [tokens, setTokens] = useState([]);
+    const [portfolio, setPortfolio] = useState([]); // Shielded Assets
+    const [fromToken, setFromToken] = useState(DEFAULT_TOKENS[0]);
+    const [toToken, setToToken] = useState(DEFAULT_TOKENS[1]);
+    const [slippage, setSlippage] = useState(0.5); // %
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+    const [selectorType, setSelectorType] = useState('from'); // 'from' or 'to'
+    const [showSlippageSettings, setShowSlippageSettings] = useState(false);
+    
+    // Quote State
+    const [quote, setQuote] = useState(null);
+    const [outputAmount, setOutputAmount] = useState('');
+    const [isQuoting, setIsQuoting] = useState(false);
+
+    // Jupiter API Config
+    const JUPITER_API_KEY = 'e6d7de54-9c24-4a7e-b0e6-67ba48867951'; // User provided key
+    const JUPITER_URL = 'https://api.jup.ag/swap/v1'; // Using v1 as standard, ultra/v1 if needed
 
     // UI & Status
     const [isProcessing, setIsProcessing] = useState(false);
@@ -48,6 +72,7 @@ const DashboardPage = () => {
     // --- Effects ---
     useEffect(() => {
         checkWalletConnection();
+        fetchTokens();
         const interval = setInterval(refreshData, 30000);
         return () => clearInterval(interval);
     }, []);
@@ -59,10 +84,102 @@ const DashboardPage = () => {
         }
     }, [authToken]);
 
+    // --- Quote Logic ---
+    useEffect(() => {
+        if (activeTab !== 'swap' || !amount || isNaN(amount) || Number(amount) <= 0) {
+            setQuote(null);
+            setOutputAmount('');
+            return;
+        }
+
+        const fetchQuote = async () => {
+            setIsQuoting(true);
+            try {
+                const inputMint = fromToken.address;
+                const outputMint = toToken.address;
+                const inputDecimals = fromToken.decimals || 9;
+                const amountInSmallestUnit = Math.floor(Number(amount) * Math.pow(10, inputDecimals));
+
+                if (amountInSmallestUnit <= 0) return;
+
+                const quoteUrl = `${JUPITER_URL}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amountInSmallestUnit}&slippageBps=${Math.round(slippage * 100)}`;
+                
+                const response = await axios.get(quoteUrl, {
+                    headers: {
+                        'x-api-key': JUPITER_API_KEY
+                    }
+                });
+
+                const data = response.data;
+                setQuote(data);
+
+                if (data.outAmount) {
+                    const outputDecimals = toToken.decimals || 6;
+                    const outAmt = Number(data.outAmount) / Math.pow(10, outputDecimals);
+                    setOutputAmount(outAmt.toFixed(6));
+                }
+            } catch (error) {
+                console.error("Quote fetch error:", error);
+                setQuote(null);
+                setOutputAmount('');
+            } finally {
+                setIsQuoting(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchQuote, 500); // Debounce 500ms
+        return () => clearTimeout(timeoutId);
+
+    }, [amount, fromToken, toToken, slippage, activeTab]);
+
     // --- Helpers ---
+    const fetchPortfolio = async (token) => {
+        try {
+            const res = await axios.get(`${API_URL}/balance/portfolio`, { headers: { Authorization: `Bearer ${token}` } });
+            if (res.data.tokens) {
+                // Enrich tokens with metadata from Jupiter list
+                const enriched = res.data.tokens.map(pt => {
+                    const meta = tokens.find(t => t.address === pt.mint);
+                    return {
+                        ...pt,
+                        symbol: meta?.symbol || 'Unknown',
+                        name: meta?.name || 'Unknown Token',
+                        logoURI: meta?.logoURI || 'https://via.placeholder.com/32'
+                    };
+                });
+                setPortfolio(enriched);
+            }
+        } catch (e) {
+            console.error("Portfolio fetch failed", e);
+        }
+    };
+
+    const fetchTokens = async () => {
+        try {
+            // Check local storage first
+            const cached = localStorage.getItem('jupiter_tokens');
+            const cachedTime = localStorage.getItem('jupiter_tokens_time');
+            if (cached && cachedTime && Date.now() - Number(cachedTime) < 1000 * 60 * 60) {
+                setTokens(JSON.parse(cached));
+                return;
+            }
+
+            const res = await axios.get(`${API_URL}/swap/tokens`);
+            setTokens(res.data);
+            localStorage.setItem('jupiter_tokens', JSON.stringify(res.data));
+            localStorage.setItem('jupiter_tokens_time', Date.now());
+        } catch (e) {
+            console.error("Failed to fetch tokens", e);
+            setTokens(DEFAULT_TOKENS);
+        }
+    };
+
     const refreshData = () => {
         if (walletAddress) refreshPublicBalance();
-        if (authToken) fetchPrivateBalance(authToken);
+        if (authToken) {
+            fetchPrivateBalance(authToken);
+            fetchPortfolio(authToken);
+        }
     };
 
     const notify = (type, msg) => {
@@ -209,36 +326,84 @@ const DashboardPage = () => {
             }
             // 4. SWAP
             else if (activeTab === 'swap') {
-                const res = await axios.post(`${API_URL}/swap/create-tx`, { amount: Number(amount), fromToken, toToken }, { headers: { Authorization: `Bearer ${token}` } });
-                await processTx(res.data.unsignedTx, token, 'swap');
+                // 1. Prepare Swap (Get nonce/message from backend if needed, or generate locally)
+                // For simplicity and matching Transfer logic, we'll sign a message locally or ask backend for it.
+                
+                // IMPORTANT: We use 'external_transfer' format so backend can actually deduct balance via RADR SDK
+                const nonce = Math.random().toString(36).substring(2) + Date.now().toString(36);
+                const timestamp = Math.floor(Date.now() / 1000);
+                const transferType = 'external_transfer';
+                const message = `shadowpay:${transferType}:${nonce}:${timestamp}`;
+                
+                const encodedMessage = new TextEncoder().encode(message);
+                
+                // Request Signature from Phantom
+                const { signature } = await window.phantom.solana.signMessage(encodedMessage, 'utf8');
+                const signatureBase58 = bs58.encode(signature);
+
+                // 2. Execute Swap on Backend with Signature
+                const res = await axios.post(`${API_URL}/swap/execute`, { 
+                    amount: Number(amount), 
+                    fromToken, 
+                    toToken,
+                    slippageBps: Math.round(slippage * 100),
+                    signature: signatureBase58,
+                    message: message,
+                    nonce: nonce, // Send nonce too
+                    timestamp: timestamp
+                }, { headers: { Authorization: `Bearer ${token}` } });
+                
+                notify('success', 'Swap Successful! TX: ' + res.data.txHash.slice(0, 8) + '...');
             }
             
             setAmount('');
             refreshData();
         } catch (err) {
             const msg = err.response?.data?.error || err.message;
-            notify('error', msg.includes('6000') ? 'Minimum 0.1 SOL required' : msg);
+            notify('error', msg);
         } finally {
             setIsProcessing(false);
         }
     };
 
     const processTx = async (unsignedTx, token, type) => {
-        const transaction = Transaction.from(Buffer.from(unsignedTx, 'base64'));
-        const { signature } = await window.phantom.solana.signAndSendTransaction(transaction);
-        
-        const connection = new Connection(HELIUS_RPC, 'confirmed');
-        const latestBlockhash = await connection.getLatestBlockhash();
-        await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
-
-        // Notify Backend
-        const endpoint = type === 'swap' ? '/swap/notify' : (type === 'deposit' ? '/deposit/notify' : '/withdraw/notify');
-        const payload = type === 'swap' 
-            ? { amount: Number(amount), fromToken, toToken, txHash: signature }
-            : { amount: Number(amount), txHash: signature };
+        // This function is now only used for Deposit/Withdraw (Public Wallet)
+        try {
+            // Determine transaction type (Versioned or Legacy)
+            const txBuffer = Buffer.from(unsignedTx, 'base64');
+            let transaction;
             
-        await axios.post(`${API_URL}${endpoint}`, payload, { headers: { Authorization: `Bearer ${token}` } });
-        notify('success', 'Transaction Successful');
+            try {
+                // Try deserializing as Versioned Transaction first (Jupiter v6 default)
+                transaction = VersionedTransaction.deserialize(txBuffer);
+            } catch (e) {
+                // Fallback to Legacy Transaction
+                transaction = Transaction.from(txBuffer);
+            }
+
+            const { signature } = await window.phantom.solana.signAndSendTransaction(transaction);
+            
+            const connection = new Connection(HELIUS_RPC, 'confirmed');
+            const latestBlockhash = await connection.getLatestBlockhash();
+            
+            await connection.confirmTransaction({ 
+                signature, 
+                blockhash: latestBlockhash.blockhash, 
+                lastValidBlockHeight: latestBlockhash.lastValidBlockHeight 
+            }, 'confirmed');
+    
+            // Notify Backend
+            const endpoint = type === 'swap' ? '/swap/notify' : (type === 'deposit' ? '/deposit/notify' : '/withdraw/notify');
+            const payload = type === 'swap' 
+                ? { amount: Number(amount), fromTokenSymbol: fromToken.symbol, toTokenSymbol: toToken.symbol, txHash: signature }
+                : { amount: Number(amount), txHash: signature };
+                
+            await axios.post(`${API_URL}${endpoint}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+            notify('success', 'Transaction Successful');
+        } catch (error) {
+            console.error("Transaction failed", error);
+            notify('error', 'Transaction failed: ' + error.message);
+        }
     };
 
     // --- New Transfer Flow (Message Signing) ---
@@ -407,7 +572,44 @@ const DashboardPage = () => {
                                 </div>
                             </div>
                         </div>
+
+                    {/* Shielded Assets Portfolio - ALWAYS VISIBLE FOR DEBUG */}
+                    <div className="col-span-2 mt-2 bg-[#0A0A0A]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-4 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-purple-500"></div>
+                            Shielded Assets
+                        </h4>
+                        
+                        {portfolio.length > 0 ? (
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
+                                {portfolio.map((asset, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-black/20 p-2.5 rounded-xl border border-white/5 hover:bg-white/5 transition-colors group">
+                                        <div className="flex items-center gap-3">
+                                            <img 
+                                                src={asset.logoURI} 
+                                                alt={asset.symbol} 
+                                                className="w-8 h-8 rounded-full bg-gray-800 object-cover shadow-sm"
+                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/32?text=?'; }}
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">{asset.symbol}</span>
+                                                <span className="text-[10px] text-gray-500 font-mono truncate max-w-[120px]">{asset.name}</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm font-mono font-bold text-white">{asset.amount.toLocaleString(undefined, { maximumFractionDigits: 6 })}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-6 text-gray-600 gap-2 border border-dashed border-white/5 rounded-xl">
+                                <span className="text-xs">No assets found</span>
+                                <span className="text-[9px] text-gray-700">Swap tokens to see them here</span>
+                            </div>
+                        )}
                     </div>
+                </div>
                 )}
 
                 {/* Main Interaction Card */}
@@ -466,21 +668,45 @@ const DashboardPage = () => {
                                     onChange={(e) => setAmount(e.target.value)}
                                     className="w-full bg-transparent text-4xl font-bold text-white placeholder-gray-800 outline-none font-mono tracking-tighter"
                                 />
-                                <div className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-xl border border-white/5 hover:border-white/10 transition-colors cursor-pointer shadow-lg group-hover:shadow-xl group-hover:scale-105 duration-300">
-                                    <img 
-                                        src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" 
-                                        className="w-6 h-6 rounded-full shadow-sm" 
-                                        alt="SOL" 
-                                    />
-                                    <span className="font-bold text-sm pr-1">SOL</span>
-                                    <ChevronDown className="w-3 h-3 text-gray-500" />
-                                </div>
+                                {activeTab === 'swap' ? (
+                                    <button 
+                                        onClick={() => { setSelectorType('from'); setIsSelectorOpen(true); }}
+                                        className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-xl border border-white/5 hover:border-white/10 transition-colors cursor-pointer shadow-lg hover:shadow-xl hover:scale-105 duration-300 min-w-[120px]"
+                                    >
+                                        <img 
+                                            src={fromToken.logoURI} 
+                                            className="w-6 h-6 rounded-full shadow-sm" 
+                                            alt={fromToken.symbol}
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/24?text=?'; }} 
+                                        />
+                                        <span className="font-bold text-sm pr-1 truncate">{fromToken.symbol}</span>
+                                        <ChevronDown className="w-3 h-3 text-gray-500 ml-auto" />
+                                    </button>
+                                ) : (
+                                    <div className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-xl border border-white/5 shadow-lg">
+                                        <img 
+                                            src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" 
+                                            className="w-6 h-6 rounded-full shadow-sm" 
+                                            alt="SOL" 
+                                        />
+                                        <span className="font-bold text-sm pr-1">SOL</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Middle Action Indicator */}
                         <div className="flex justify-center -my-6 relative z-20">
-                            <div className="bg-[#0A0A0A] border-[3px] border-[#0A0A0A] outline outline-1 outline-white/10 p-2.5 rounded-xl text-gray-400 shadow-xl hover:text-white hover:scale-110 transition-all cursor-pointer bg-[#111]">
+                            <div 
+                                onClick={() => {
+                                    if (activeTab === 'swap') {
+                                        const temp = fromToken;
+                                        setFromToken(toToken);
+                                        setToToken(temp);
+                                    }
+                                }}
+                                className={`bg-[#0A0A0A] border-[3px] border-[#0A0A0A] outline outline-1 outline-white/10 p-2.5 rounded-xl text-gray-400 shadow-xl hover:text-white hover:scale-110 transition-all cursor-pointer bg-[#111] ${activeTab === 'swap' ? 'hover:rotate-180' : ''}`}
+                            >
                                 {activeTab === 'swap' ? <RefreshCw className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
                             </div>
                         </div>
@@ -491,6 +717,20 @@ const DashboardPage = () => {
                             {/* Content based on Tab */}
                             <div className="relative min-h-[140px]">
                             {activeTab === 'swap' && (
+                                <div className="animate-in fade-in zoom-in-95 duration-300 absolute inset-0 flex flex-col items-center justify-center text-center">
+                                    <div className="bg-purple-500/10 p-4 rounded-full border border-purple-500/10 mb-3 relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full animate-pulse"></div>
+                                        <RefreshCw className="w-8 h-8 text-purple-400 relative z-10" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-white mb-1">Coming Soon</h3>
+                                    <p className="text-xs text-gray-400 max-w-[200px]">
+                                        Private Swaps are currently under maintenance. Check back later!
+                                    </p>
+                                </div>
+                            )}
+                            
+                            {/* DISABLED SWAP UI
+                            {activeTab === 'swap_disabled' && (
                                 <div className="animate-in fade-in zoom-in-95 duration-300 absolute inset-0">
                                     <div className="flex justify-between items-center mb-4">
                                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
@@ -503,20 +743,26 @@ const DashboardPage = () => {
                                             type="text"
                                             readOnly
                                             placeholder="0.00"
-                                            value={amount} 
+                                            value={isQuoting ? "Loading..." : outputAmount || "0.00"} 
                                             className="w-full bg-transparent text-4xl font-bold text-gray-600 outline-none font-mono tracking-tighter"
                                         />
-                                        <div className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-xl border border-white/5 shadow-lg">
+                                        <button 
+                                            onClick={() => { setSelectorType('to'); setIsSelectorOpen(true); }}
+                                            className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-xl border border-white/5 hover:border-white/10 transition-colors cursor-pointer shadow-lg hover:shadow-xl hover:scale-105 duration-300 min-w-[120px]"
+                                        >
                                             <img 
-                                                src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png" 
+                                                src={toToken.logoURI} 
                                                 className="w-6 h-6 rounded-full shadow-sm" 
-                                                alt="USDC" 
+                                                alt={toToken.symbol} 
+                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/24?text=?'; }}
                                             />
-                                            <span className="font-bold text-sm">USDC</span>
-                                        </div>
+                                            <span className="font-bold text-sm pr-1 truncate">{toToken.symbol}</span>
+                                            <ChevronDown className="w-3 h-3 text-gray-500 ml-auto" />
+                                        </button>
                                     </div>
                                 </div>
-                            )}
+                            )} 
+                            */}
                             
                             {activeTab === 'shield' && (
                                 <div className="animate-in fade-in zoom-in-95 duration-300 absolute inset-0 flex items-center">
@@ -683,6 +929,19 @@ const DashboardPage = () => {
                     </div>
                 </>
             )}
+
+            {/* Token Selector Modal */}
+            <TokenSelector 
+                isOpen={isSelectorOpen} 
+                onClose={() => setIsSelectorOpen(false)}
+                tokens={tokens}
+                rpcUrl={HELIUS_RPC}
+                onSelect={(token) => {
+                    if (selectorType === 'from') setFromToken(token);
+                    else setToToken(token);
+                    setIsSelectorOpen(false);
+                }}
+            />
 
         </div>
     );

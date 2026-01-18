@@ -24,7 +24,7 @@ const connectToDatabase = async () => {
   if (isConnected) return;
   
   let MONGO_URL = process.env.MONGO_URL;
-  const DB_NAME = process.env.DB_NAME || 'spectra_db';
+  const DB_NAME = process.env.DB_NAME || 'spectre_db';
 
   try {
     // If running locally and no MongoDB URL provided or connection refused, use In-Memory DB
@@ -85,7 +85,7 @@ apiRouter.use('/withdraw', withdrawRoutes);
 apiRouter.use('/transactions', transactionRoutes);
 
 apiRouter.get('/', (req, res) => {
-  res.json({ message: "SpectraV2 API is running" });
+  res.json({ message: "SpectreV2 API is running" });
 });
 
 // GET /api/status - List status checks

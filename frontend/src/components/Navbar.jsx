@@ -33,12 +33,12 @@ const Navbar = () => {
                 <div className="absolute inset-0 bg-green-500 rounded-xl blur opacity-20 group-hover:opacity-50 transition-opacity duration-500"></div>
                 <img 
                   src="https://i.hizliresim.com/852gn2e.png" 
-                  alt="Spectra Logo" 
+                  alt="Spectre Logo" 
                   className="w-full h-full object-contain relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
                 />
             </div>
             <div className="flex flex-col">
-                <span className="text-white text-lg font-bold tracking-tight leading-none group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-green-400 group-hover:to-purple-500 transition-all duration-300">SPECTRA</span>
+                <span className="text-white text-lg font-bold tracking-tight leading-none group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-green-400 group-hover:to-purple-500 transition-all duration-300">SPECTRE</span>
                 <span className="text-[10px] text-gray-500 font-mono tracking-[0.2em] uppercase group-hover:text-white transition-colors">Protocol</span>
             </div>
           </div>
@@ -48,7 +48,7 @@ const Navbar = () => {
             {['Problem', 'Solution', 'Infrastructure', 'Docs'].map((item) => (
                 <a 
                   key={item} 
-                  href={`#${item.toLowerCase()}`} 
+                  href={item === 'Docs' ? '/docs' : `#${item.toLowerCase()}`} 
                   className="relative px-5 py-2 text-sm text-gray-400 hover:text-white transition-colors group overflow-hidden rounded-full"
                 >
                   <span className="relative z-10">{item}</span>
@@ -85,7 +85,7 @@ const Navbar = () => {
                 {['Problem', 'Solution', 'Infrastructure', 'Docs'].map((item) => (
                     <a 
                       key={item} 
-                      href={`#${item.toLowerCase()}`} 
+                      href={item === 'Docs' ? '/docs' : `#${item.toLowerCase()}`} 
                       className="text-lg text-gray-400 hover:text-white py-2 border-b border-white/5"
                       onClick={() => setMobileMenuOpen(false)}
                     >

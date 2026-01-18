@@ -24,19 +24,20 @@ const HeroSection = () => {
         </div>
 
         {/* Main Headline */}
-        <div className="space-y-6">
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white leading-[0.9] drop-shadow-2xl">
-              Privacy Layer 2
-            </h1>
-            <p className="text-2xl md:text-3xl text-gray-400 font-light tracking-wide">
-              Private transfers for the <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-purple-400 font-medium">Solana ecosystem</span>.
-            </p>
-        </div>
+        <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tighter mb-6 leading-tight">
+          <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-gray-500">
+            Spectre
+          </span>
+          <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 animate-pulse">
+            Protocol
+          </span>
+        </h1>
 
         {/* Description */}
-        <p className="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-light">
-          Our mission is to make Solana transfers fully private. By routing transactions through a dedicated 
-          <span className="text-gray-300 font-medium"> ZK-Proof Protocol</span>, SPECTRA ensures that your financial footprint remains yours alone.
+        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          The first privacy-preserving liquidity layer on Solana.
+          <span className="block mt-2 text-gray-500">Shield assets. Swap privately. Stay anonymous.</span>
         </p>
 
         {/* CTA Buttons */}
