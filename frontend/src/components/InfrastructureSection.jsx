@@ -51,7 +51,7 @@ const InfrastructureSection = () => {
             </div>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold text-white tracking-tighter">
-            Disappear in <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-purple-500">Spectra.</span>
+            Disappear in <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-purple-500">Spectre.</span>
           </h2>
           <p className="text-gray-400 text-xl max-w-3xl mx-auto font-light leading-relaxed">
             A privacy-first Layer 2 infrastructure on Solana that enables wallet-to-wallet transfers to execute without leaking identity.
@@ -86,7 +86,7 @@ const InfrastructureSection = () => {
                     <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center border border-green-500/20">
                         <Shield className="w-6 h-6 text-green-400" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white">Spectra Layer 2</h3>
+                    <h3 className="text-2xl font-bold text-white">Spectre Layer 2</h3>
                     <p className="text-gray-300 text-sm leading-relaxed">
                         Zero-Knowledge circuits verify the transaction validity without revealing the sender or receiver.
                     </p>

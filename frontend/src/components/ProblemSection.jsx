@@ -68,7 +68,7 @@ const ProblemSection = () => {
                 
                 <div>
                     <h3 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                        Spectra Privacy
+                        Spectre Privacy
                         <span className="text-sm font-bold bg-green-500 text-black px-2 py-0.5 rounded uppercase tracking-wide">Pro</span>
                     </h3>
                     <p className="text-gray-400 leading-relaxed">
