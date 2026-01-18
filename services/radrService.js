@@ -50,21 +50,34 @@ class RadrService {
             
             // ATTEMPT RECOVERY: If error is about file not found, try to point to the file manually
             // This is a common fix for Vercel Serverless Functions
-            if (error.message && (error.message.includes("no such file") || error.message.includes("ENOENT"))) {
+            if (error.message) { // Always try recovery on error
                  console.warn("? Attempting WASM recovery with manual path...");
                  try {
                      const path = require('path');
                      // Vercel puts included files in the root or parallel to the function
-                     // Let's try to find it relative to current directory
-                     const wasmPath = path.join(process.cwd(), 'node_modules', '@radr', 'shadowwire', 'dist', 'wasm', 'settler_wasm_bg.wasm');
-                     console.log("Trying WASM Path:", wasmPath);
+                     // Let's try multiple potential paths
                      
-                     await initWASM(wasmPath);
+                     const potentialPaths = [
+                        path.join(process.cwd(), 'node_modules', '@radr', 'shadowwire', 'dist', 'wasm', 'settler_wasm_bg.wasm'),
+                        path.join(__dirname, '..', 'node_modules', '@radr', 'shadowwire', 'dist', 'wasm', 'settler_wasm_bg.wasm'),
+                        path.join(process.cwd(), 'radr_wasm_bg.wasm'), // If flattened
+                        '/var/task/node_modules/@radr/shadowwire/dist/wasm/settler_wasm_bg.wasm' // Common Lambda path
+                     ];
+
+                     for (const wasmPath of potentialPaths) {
+                        try {
+                            console.log("Trying WASM Path:", wasmPath);
+                            await initWASM(wasmPath);
+                            client = new ShadowWireClient({ debug: true });
+                            isInitialized = true;
+                            console.log("? ShadowWire SDK Recovered & Initialized from:", wasmPath);
+                            return;
+                        } catch (e) {
+                            console.log(`Failed path: ${wasmPath}`);
+                        }
+                     }
                      
-                     client = new ShadowWireClient({ debug: true });
-                     isInitialized = true;
-                     console.log("? ShadowWire SDK Recovered & Initialized!");
-                     return;
+                     throw new Error("All WASM paths failed");
                  } catch (recoveryError) {
                      console.error("? Recovery Failed:", recoveryError);
                  }
