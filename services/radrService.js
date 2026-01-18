@@ -32,6 +32,9 @@ class RadrService {
         try {
             // Initialize WASM for ZK Proofs
             console.log("Initializing ShadowWire WASM...");
+            
+            // Try explicit path for Vercel if default fails (though includeFiles should fix it)
+            // But let's try standard init first
             await initWASM();
             
             // Initialize Client
@@ -44,10 +47,30 @@ class RadrService {
             console.log("? ShadowWire SDK Initialized Successfully");
         } catch (error) {
             console.error("? ShadowWire Init Failed (CRITICAL):", error);
-            // We should probably mark that initialization failed so we don't keep trying blindly
-            // But for now, logging the exact error is key.
-            // If init fails, client remains null.
-            throw error; // Re-throw so the caller knows init failed
+            
+            // ATTEMPT RECOVERY: If error is about file not found, try to point to the file manually
+            // This is a common fix for Vercel Serverless Functions
+            if (error.message && (error.message.includes("no such file") || error.message.includes("ENOENT"))) {
+                 console.warn("? Attempting WASM recovery with manual path...");
+                 try {
+                     const path = require('path');
+                     // Vercel puts included files in the root or parallel to the function
+                     // Let's try to find it relative to current directory
+                     const wasmPath = path.join(process.cwd(), 'node_modules', '@radr', 'shadowwire', 'dist', 'wasm', 'settler_wasm_bg.wasm');
+                     console.log("Trying WASM Path:", wasmPath);
+                     
+                     await initWASM(wasmPath);
+                     
+                     client = new ShadowWireClient({ debug: true });
+                     isInitialized = true;
+                     console.log("? ShadowWire SDK Recovered & Initialized!");
+                     return;
+                 } catch (recoveryError) {
+                     console.error("? Recovery Failed:", recoveryError);
+                 }
+            }
+            
+            throw error; // Re-throw if recovery fails
         }
     }
 
