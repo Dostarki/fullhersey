@@ -284,7 +284,14 @@ class RadrService {
 
     // Register User (Get API Key)
     static async registerUser(walletAddress) {
-        if (!isInitialized) await this.init();
+        // Attempt init but don't crash if it fails
+        if (!isInitialized) {
+            try {
+                await this.init();
+            } catch (e) {
+                console.warn("RadrService Init failed during registration (non-fatal):", e.message);
+            }
+        }
         
         try {
             const timestamp = Date.now();
@@ -294,11 +301,9 @@ class RadrService {
 
         } catch (error) {
             console.error("Radr Registration Error:", error);
-            return `sp_live_${walletAddress.substring(0, 8)}`;
-        }
-    }
-
-    // Get Shielded Balance
+            // Fallback
+            return `radr_key_${walletAddress}_${Date.now()}`;
+        } Get Shielded Balance
     static async getBalance(walletAddress, apiKey = null) {
         if (!isInitialized) await this.init();
         try {

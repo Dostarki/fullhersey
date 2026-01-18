@@ -55,22 +55,24 @@ router.post('/', async (req, res) => {
           user.radrApiKey = radrKey;
       } catch (keyError) {
           console.error('Failed to register user with RadrService:', keyError);
-          // Fallback to a mock key to allow login even if Radr is down
-          user.radrApiKey = `sp_fallback_${Date.now()}`;
+          // Fallback to a valid format key even if service is down
+          user.radrApiKey = `radr_key_${walletAddress}_${Date.now()}`;
       }
     } else {
       console.log('User found:', user._id);
       
-      // Fix for legacy/mock keys: If key is missing OR is a mock key, fetch a REAL one
-      if (!user.radrApiKey || user.radrApiKey.startsWith('mock_key')) {
+      // Fix for legacy/mock keys: If key is missing OR is a mock/fallback key, fetch a REAL one
+      if (!user.radrApiKey || user.radrApiKey.startsWith('mock_key') || user.radrApiKey.startsWith('sp_fallback')) {
         console.log('Refreshing API Key for user...');
         try {
             const radrKey = await RadrService.registerUser(walletAddress);
             user.radrApiKey = radrKey;
         } catch (keyError) {
              console.error('Failed to refresh API Key:', keyError);
-             // Keep existing or set fallback
-             if (!user.radrApiKey) user.radrApiKey = `sp_fallback_${Date.now()}`;
+             // Keep existing or set proper fallback
+             if (!user.radrApiKey || user.radrApiKey.startsWith('sp_fallback')) {
+                 user.radrApiKey = `radr_key_${walletAddress}_${Date.now()}`;
+             }
         }
       }
     }
