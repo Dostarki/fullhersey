@@ -48,45 +48,17 @@ class RadrService {
 
     // Generate Unsigned Deposit Transaction
     static async createDepositTx(walletAddress, amountSOL, targetVaultAddress = null) {
-        // Fallback Mode: If ShadowWire is unavailable, generate a simple transfer to the Vault/Relayer
-        // This ensures the user can still "Shield" funds (deposit into the system) even if ZK proofs are offline.
+        // Fallback Mode REMOVED as per user request (Must use real Privacy Pool)
+        /*
         if (!shadowWireAvailable || !isInitialized) {
             console.warn("Using Fallback Deposit (Simple Transfer) due to missing ShadowWire SDK");
-            
-            try {
-                const { Connection, Transaction, SystemProgram, PublicKey } = require('@solana/web3.js');
-                
-                // Use the provided target vault address (user's internal wallet) if available.
-                // If not provided, fallback to a global relayer (though this should be avoided for user funds).
-                const VAULT_ADDRESS = targetVaultAddress || process.env.RELAYER_WALLET_ADDRESS || "8yXy6SnnS1cnVuY8S4rYv7r5w8w8w8w8w8w8w8w8w8w"; 
-                
-                console.log(`Fallback Deposit Target: ${VAULT_ADDRESS}`);
-
-                const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=9b5e747a-f1c2-4c67-8294-537ad41e92b6');
-                const fromPubkey = new PublicKey(walletAddress);
-                const toPubkey = new PublicKey(VAULT_ADDRESS);
-                
-                const transaction = new Transaction().add(
-                    SystemProgram.transfer({
-                        fromPubkey,
-                        toPubkey,
-                        lamports: Math.floor(Number(amountSOL) * 1_000_000_000),
-                    })
-                );
-                
-                const { blockhash } = await connection.getLatestBlockhash();
-                transaction.recentBlockhash = blockhash;
-                transaction.feePayer = fromPubkey;
-                
-                const serialized = transaction.serialize({ requireAllSignatures: false });
-                return serialized.toString('base64');
-
-            } catch (fallbackError) {
-                console.error("Fallback Deposit Error:", fallbackError);
-                throw new Error("Deposit failed (Both SDK and Fallback): " + fallbackError.message);
-            }
+            // ... (Fallback code removed/commented) ...
         }
+        */
 
+        if (!shadowWireAvailable) {
+            throw new Error("ShadowWire Library is unavailable (WASM/Dependency Error). Cannot perform Privacy Pool Deposit.");
+        }
 
         if (!isInitialized) await this.init();
         
